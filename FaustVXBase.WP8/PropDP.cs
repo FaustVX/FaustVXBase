@@ -1,7 +1,8 @@
-﻿using Windows.UI.Xaml;
+﻿using System;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 
-namespace FaustVXBase.XAML
+namespace FaustVXBase.WP8
 {
     public class PropDP<TProperty, TClassOwner>(string property, TProperty defaultValue, PropDP<TProperty, TClassOwner>.PropertyChangedCallback callback)
         where TClassOwner : DependencyObject
@@ -12,8 +13,8 @@ namespace FaustVXBase.XAML
         {
             public enum ConvertState
             {
-                ConvertFailed = 0,
-                ConvertOk = 1
+                ConvertFailed,
+                ConvertOk
             }
 
             public TProperty OldValue { get; } = oldValue;
@@ -116,7 +117,22 @@ namespace FaustVXBase.XAML
         }
 
 
-        public static void SetBinding<TClass, TClassOwner, TProperty>(this TClass element, TClassOwner source, PropDP<TProperty, TClassOwner> path, BindingMode mode, PropDP<TProperty, TClass> dp, TProperty fallback = default(TProperty), IValueConverter converter = null)
+        public static void SetBinding<TClass, TClassOwner, TProperty>(this TClass element, TClassOwner source, PropDP<TProperty, TClassOwner> path, PropDP<TProperty, TClass> dp, BindingMode mode = (BindingMode)0, TProperty fallback = default(TProperty))
+            where TClass : FrameworkElement
+            where TClassOwner : DependencyObject
+        {
+            var binding = new Binding()
+            {
+                Source = source,
+                Path = new PropertyPath(path),
+                FallbackValue = fallback,
+                Mode = mode
+            };
+
+            element.SetBinding(dp, binding);
+        }
+
+        public static void SetBinding<TClass, TClassOwner, TProperty1, TProperty2>(this TClass element, TClassOwner source, PropDP<TProperty1, TClassOwner> path, PropDP<TProperty2, TClass> dp, BindingMode mode = (BindingMode)0, TProperty1 fallback = default(TProperty1), ValueConverter<TProperty1, TProperty2> converter = null)
             where TClass : FrameworkElement
             where TClassOwner : DependencyObject
         {
@@ -132,7 +148,7 @@ namespace FaustVXBase.XAML
             element.SetBinding(dp, binding);
         }
 
-        public static void SetBinding<TClass, TClassOwner, TProperty1, TProperty2>(this TClass element, TClassOwner source, PropDP<TProperty1, TClassOwner> path, BindingMode mode, PropDP<TProperty2, TClass> dp, TProperty1 fallback = default(TProperty1), IValueConverter converter = null)
+        public static void SetBinding<TClass, TClassOwner, TProperty>(this TClass element, TClassOwner source, PropDP<TProperty, TClassOwner> path, DependencyProperty dp, BindingMode mode = (BindingMode)0, TProperty fallback = default(TProperty), IValueConverter converter = null)
             where TClass : FrameworkElement
             where TClassOwner : DependencyObject
         {
@@ -147,21 +163,17 @@ namespace FaustVXBase.XAML
 
             element.SetBinding(dp, binding);
         }
+    }
 
-        public static void SetBinding<TClass, TClassOwner, TProperty>(this TClass element, TClassOwner source, PropDP<TProperty, TClassOwner> path, BindingMode mode, DependencyProperty dp, TProperty fallback = default(TProperty), IValueConverter converter = null)
-            where TClass : FrameworkElement
-            where TClassOwner : DependencyObject
-        {
-            var binding = new Binding()
-            {
-                Source = source,
-                Path = new PropertyPath(path),
-                FallbackValue = fallback,
-                Mode = mode,
-                Converter = converter
-            };
+    //[ValueConversion(typeof(TInput), typeof(TOutput))]
+    public abstract class ValueConverter<TInput, TOutput> : IValueConverter
+    {
+        public abstract TOutput Convert(TInput value, object parameter, string language);
 
-            element.SetBinding(dp, binding);
-        }
+        public abstract TInput ConvertBack(TOutput value, object parameter, string language);
+
+        object IValueConverter.Convert(object value, Type targetType, object parameter, string language) => Convert((TInput)value, parameter, language);
+
+        object IValueConverter.ConvertBack(object value, Type targetType, object parameter, string language) => ConvertBack((TOutput)value, parameter, language);
     }
 }

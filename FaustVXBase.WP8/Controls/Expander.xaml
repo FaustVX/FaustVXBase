@@ -5,7 +5,7 @@
     xmlns:local="using:FaustVXBase.WP8.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:conv="using:FaustVXBase.XAML.Converters"
+    xmlns:conv="using:FaustVXBase.WP8.Converters"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
@@ -19,9 +19,9 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <ToggleButton Grid.Row="0" x:Name="Btn0" IsChecked="{Binding IsExpanded, Mode=TwoWay, FallbackValue=True}" Content="{Binding Header, Mode=OneWay, FallbackValue=Expand}"/>
-        <Border Margin="5" Padding="5" BorderBrush="{Binding BorderBrush, FallbackValue=Gray}" BorderThickness="1" Grid.Row="1" Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibility}}">
-            <ContentPresenter x:Name="Presenter" Content="{Binding Content}"/>
+        <ToggleButton Grid.Row="0" x:Name="Btn0"/>
+        <Border x:Name="Brdr" Margin="5" Padding="5" BorderThickness="1" Grid.Row="1">
+            <ContentPresenter x:Name="Presenter"/>
         </Border>
     </Grid>
 </UserControl>

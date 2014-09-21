@@ -35,9 +35,7 @@ namespace FaustVXBase.XAML
         public TProperty DefaultValue { get; } = defaultValue;
         public PropertyChangedCallback OriginalCallback { get; } = callback;
         public Windows.UI.Xaml.PropertyChangedCallback Callback { get; } = callback.ConvertCallback();
-        public DependencyProperty DependencyProperty
-        { get; private set; }
-        = DependencyProperty.Register(property,
+        public DependencyProperty DependencyProperty { get; } = DependencyProperty.Register(property,
             typeof(TProperty),
             typeof(TClassOwner),
             (callback == null) ? new PropertyMetadata(defaultValue) : new PropertyMetadata(defaultValue, callback.ConvertCallback())

@@ -1,4 +1,5 @@
 ﻿using Windows.UI.Xaml;
+using Windows.UI.Xaml.Data;
 
 namespace FaustVXBase.XAML
 {
@@ -49,10 +50,12 @@ namespace FaustVXBase.XAML
         public static implicit operator TProperty(PropDP<TProperty, TClassOwner> propDP) => propDP.DefaultValue;
         public static implicit operator string (PropDP<TProperty, TClassOwner> propDP) => propDP.PropertyName;
         public static implicit operator Windows.UI.Xaml.PropertyChangedCallback(PropDP<TProperty, TClassOwner> propDP) => propDP.Callback;
+
+        public override string ToString() => DependencyProperty.ToString();
     }
 
     public static class PropDP<TClassOwner>
-            where TClassOwner : DependencyObject
+        where TClassOwner : DependencyObject
     {
         public static PropDP<TProperty, TClassOwner> Register<TProperty>(string property, TProperty defaultValue)
         {
@@ -110,6 +113,55 @@ namespace FaustVXBase.XAML
             where TClassOwner : DependencyObject
         {
             return (TProperty)c.GetAnimationBaseValue(dp);
+        }
+
+
+        public static void SetBinding<TClass, TClassOwner, TProperty>(this TClass element, TClassOwner source, PropDP<TProperty, TClassOwner> path, BindingMode mode, PropDP<TProperty, TClass> dp, TProperty fallback = default(TProperty), IValueConverter converter = null)
+            where TClass : FrameworkElement
+            where TClassOwner : DependencyObject
+        {
+            var binding = new Binding()
+            {
+                Source = source,
+                Path = new PropertyPath(path),
+                FallbackValue = fallback,
+                Mode = mode,
+                Converter = converter
+            };
+
+            element.SetBinding(dp, binding);
+        }
+
+        public static void SetBinding<TClass, TClassOwner, TProperty1, TProperty2>(this TClass element, TClassOwner source, PropDP<TProperty1, TClassOwner> path, BindingMode mode, PropDP<TProperty2, TClass> dp, TProperty1 fallback = default(TProperty1), IValueConverter converter = null)
+            where TClass : FrameworkElement
+            where TClassOwner : DependencyObject
+        {
+            var binding = new Binding()
+            {
+                Source = source,
+                Path = new PropertyPath(path),
+                FallbackValue = fallback,
+                Mode = mode,
+                Converter = converter
+            };
+
+            element.SetBinding(dp, binding);
+        }
+
+        public static void SetBinding<TClass, TClassOwner, TProperty>(this TClass element, TClassOwner source, PropDP<TProperty, TClassOwner> path, BindingMode mode, DependencyProperty dp, TProperty fallback = default(TProperty), IValueConverter converter = null)
+            where TClass : FrameworkElement
+            where TClassOwner : DependencyObject
+        {
+            var binding = new Binding()
+            {
+                Source = source,
+                Path = new PropertyPath(path),
+                FallbackValue = fallback,
+                Mode = mode,
+                Converter = converter
+            };
+
+            element.SetBinding(dp, binding);
         }
     }
 }

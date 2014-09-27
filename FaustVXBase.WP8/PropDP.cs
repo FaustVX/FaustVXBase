@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 
@@ -86,11 +88,6 @@ namespace FaustVXBase.WP8
         }
 
 
-        public static void ClearValue<TProperty, TClassOwner>(this TClassOwner c, PropDP<TProperty, TClassOwner> dp)
-            where TClassOwner : DependencyObject
-        {
-            c.ClearValue(dp);
-        }
 
         public static void SetValue<TProperty, TClassOwner>(this TClassOwner c, PropDP<TProperty, TClassOwner> dp, TProperty value)
             where TClassOwner : DependencyObject
@@ -110,14 +107,8 @@ namespace FaustVXBase.WP8
             return (TProperty)c.ReadLocalValue(dp);
         }
 
-        public static TProperty GetAnimationBaseValue<TProperty, TClassOwner>(this TClassOwner c, PropDP<TProperty, TClassOwner> dp)
-            where TClassOwner : DependencyObject
-        {
-            return (TProperty)c.GetAnimationBaseValue(dp);
-        }
 
-
-        public static void SetBinding<TClass, TClassOwner, TProperty>(this TClass element, TClassOwner source, PropDP<TProperty, TClassOwner> path, PropDP<TProperty, TClass> dp, BindingMode mode = (BindingMode)0, TProperty fallback = default(TProperty))
+        public static void SetBinding<TClass, TClassOwner, TProperty>(this TClass element, TClassOwner source, PropDP<TProperty, TClassOwner> path, PropDP<TProperty, TClass> dp, BindingMode mode = default(BindingMode), TProperty fallback = default(TProperty))
             where TClass : FrameworkElement
             where TClassOwner : DependencyObject
         {
@@ -125,14 +116,15 @@ namespace FaustVXBase.WP8
             {
                 Source = source,
                 Path = new PropertyPath(path),
-                FallbackValue = fallback,
-                Mode = mode
+                FallbackValue = fallback
             };
+            if (mode != default(BindingMode))
+                binding.Mode = mode;
 
             element.SetBinding(dp, binding);
         }
 
-        public static void SetBinding<TClass, TClassOwner, TProperty1, TProperty2>(this TClass element, TClassOwner source, PropDP<TProperty1, TClassOwner> path, PropDP<TProperty2, TClass> dp, BindingMode mode = (BindingMode)0, TProperty1 fallback = default(TProperty1), ValueConverter<TProperty1, TProperty2> converter = null)
+        public static void SetBinding<TClass, TClassOwner, TProperty1, TProperty2>(this TClass element, TClassOwner source, PropDP<TProperty1, TClassOwner> path, PropDP<TProperty2, TClass> dp, BindingMode mode = default(BindingMode), TProperty1 fallback = default(TProperty1), ValueConverter<TProperty1, TProperty2> converter = null)
             where TClass : FrameworkElement
             where TClassOwner : DependencyObject
         {
@@ -141,14 +133,15 @@ namespace FaustVXBase.WP8
                 Source = source,
                 Path = new PropertyPath(path),
                 FallbackValue = fallback,
-                Mode = mode,
                 Converter = converter
             };
+            if (mode != default(BindingMode))
+                binding.Mode = mode;
 
             element.SetBinding(dp, binding);
         }
 
-        public static void SetBinding<TClass, TClassOwner, TProperty>(this TClass element, TClassOwner source, PropDP<TProperty, TClassOwner> path, DependencyProperty dp, BindingMode mode = (BindingMode)0, TProperty fallback = default(TProperty), IValueConverter converter = null)
+        public static void SetBinding<TClass, TClassOwner, TProperty>(this TClass element, TClassOwner source, PropDP<TProperty, TClassOwner> path, DependencyProperty dp, BindingMode mode = default(BindingMode), TProperty fallback = default(TProperty), IValueConverter converter = null)
             where TClass : FrameworkElement
             where TClassOwner : DependencyObject
         {
@@ -157,9 +150,10 @@ namespace FaustVXBase.WP8
                 Source = source,
                 Path = new PropertyPath(path),
                 FallbackValue = fallback,
-                Mode = mode,
                 Converter = converter
             };
+            if (mode != default(BindingMode))
+                binding.Mode = mode;
 
             element.SetBinding(dp, binding);
         }
@@ -175,5 +169,26 @@ namespace FaustVXBase.WP8
         object IValueConverter.Convert(object value, Type targetType, object parameter, string language) => Convert((TInput)value, parameter, language);
 
         object IValueConverter.ConvertBack(object value, Type targetType, object parameter, string language) => ConvertBack((TOutput)value, parameter, language);
+    }
+
+    public abstract class AdvancedNotifyPropertyChanged(PropertyChangedEventHandler defaultEvent) : INotifyPropertyChanged
+    {
+        public AdvancedNotifyPropertyChanged()
+            : this(null)
+        { }
+
+        public event PropertyChangedEventHandler PropertyChanged = defaultEvent ?? DefaultEvent;
+
+        protected void OnPropertyChanged([CallerMemberName]string propertyName = "") => PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+
+        private static void DefaultEvent(object sender, PropertyChangedEventArgs e) { }
+
+        protected void RaisePropertyChanged<TProperty>(ref TProperty oldValue, TProperty newValue, [CallerMemberName]string propertyName = "")
+        {
+            if (oldValue.Equals(newValue))
+                return;
+            oldValue = newValue;
+            OnPropertyChanged(propertyName);
+        }
     }
 }

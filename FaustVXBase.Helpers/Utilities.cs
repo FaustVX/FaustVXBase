@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace FaustVXBase.Helpers
 {
@@ -37,6 +35,45 @@ namespace FaustVXBase.Helpers
         {
             Array.Sort(values);
             return values.LastOrDefault();
+        }
+        
+        public static SwitchHelper<T> Switch<T>(this T value, SwitchHelper<T>.SwitchBehavior behavior = SwitchHelper<T>.SwitchBehavior.OneCase) => new SwitchHelper<T>(value, behavior);
+    }
+
+    public class SwitchHelper<T>(T value, SwitchHelper<T>.SwitchBehavior behavior = SwitchHelper<T>.SwitchBehavior.OneCase)
+    {
+        public delegate void SwitchHelperDelegate(T value);
+        public delegate void SwitchHelperSimpleDelegate();
+        public delegate bool SwitchHelperPerdicate(T value);
+
+        public enum SwitchBehavior { OneCase, AllCase}
+        public SwitchBehavior Behavior { get; } = behavior;
+
+        public T Value { get; } = value;
+        private bool _executed = false;
+
+        public SwitchHelper<T> Case<TType>(SwitchHelperDelegate action) => Case(v => v is TType, action);
+
+        public SwitchHelper<T> Case<TType>(SwitchHelperSimpleDelegate action) => Case(v => v is TType, action);
+
+        public SwitchHelper<T> Case(SwitchHelperPerdicate predicate, SwitchHelperDelegate action)
+        {
+            if ((Behavior == SwitchBehavior.AllCase || (Behavior == SwitchBehavior.OneCase && !_executed)) && predicate(Value))
+            {
+                _executed = true;
+                action(Value);
+            }
+            return this;
+        }
+
+        public SwitchHelper<T> Case(SwitchHelperPerdicate predicate, SwitchHelperSimpleDelegate action)
+        {
+            if ((Behavior == SwitchBehavior.AllCase || (Behavior == SwitchBehavior.OneCase && !_executed)) && predicate(Value))
+            {
+                _executed = true;
+                action();
+            }
+            return this;
         }
     }
 }
